@@ -12,8 +12,10 @@ export function WikiPost({ post }: WikiPostProps) {
     <article className="wiki-post group">
       <div className="wiki-content">
         <div className="wiki-meta animate-in">
-          <span>{post.description || "General Knowledge"}</span>
-          <span className="opacity-30">ID_{post.pageid}</span>
+          <span className="bg-foreground text-background px-2 py-0.5 text-[10px] font-bold tracking-wider rounded-xs">
+            {post.description?.toUpperCase() || "GENERAL KNOWLEDGE"}
+          </span>
+          <span className="font-mono text-[10px] opacity-30 tracking-tighter">REF_{post.pageid}</span>
         </div>
         <h1 className="wiki-header animate-in delay-1" dangerouslySetInnerHTML={{ __html: post.displaytitle }} />
         <div className="wiki-body-container animate-in delay-2">

@@ -94,20 +94,20 @@ body {
   display: flex;
   flex-direction: column;
   /* Optimized safe zones for fixed UI */
-  padding-top: 6rem;
-  padding-bottom: 6rem;
+  padding-top: 7rem;
+  padding-bottom: 7rem;
   justify-content: center;
 }
 
 /* Tablet & Mobile Adjustments */
 @media (max-width: 1024px) {
   .wiki-content {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
   }
 
   .wiki-header {
-    font-size: clamp(2rem, 7vw, 3.5rem);
+    font-size: clamp(2.5rem, 7vw, 3.5rem);
     margin-bottom: 1.5rem;
   }
 }
@@ -117,24 +117,33 @@ body {
     padding: 0 1.5rem;
   }
 
+  .wiki-post::before {
+    width: 24px;
+  }
+
+  .wiki-post::after {
+    height: 24px;
+  }
+
   .wiki-content {
-    padding-top: 4rem;
-    padding-bottom: 4rem;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
   }
 
   .wiki-header {
-    font-size: 2.25rem;
+    font-size: clamp(2rem, 10vw, 2.75rem);
     line-height: 1;
     margin-bottom: 1.25rem;
+  }
+
+  .wiki-body-container {
+    padding-right: 0.5rem;
+    max-height: 55dvh;
   }
 }
 
 .wiki-meta {
   font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
   color: var(--foreground);
   margin-bottom: 1.5rem;
   display: flex;

@@ -9,8 +9,36 @@ export function Feed() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Wheel interceptor for smooth slide snapping
+  // IntersectionObserver for tracking current active post (Smoother than onScroll)
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(entry.target.getAttribute("data-index") || "0", 10);
+            setCurrentIndex(index);
+
+            // Proactive fetch
+            if (posts.length - index < 5) {
+              fetchMore();
+            }
+          }
+        });
+      },
+      {
+        root: containerRef.current,
+        threshold: 0.5, // 50% visibility triggers the change
+      }
+    );
+
+    return () => observerRef.current?.disconnect();
+  }, [posts.length, fetchMore]);
+
+  // Wheel interceptor for smooth slide snapping on Desktop
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -49,12 +77,7 @@ export function Feed() {
     if (!container) return;
 
     isScrollingRef.current = true;
-    setCurrentIndex(index);
-
-    // Trigger proactive fetch here because handleScroll is blocked by isScrollingRef lock
-    if (posts.length - index < 5) {
-      fetchMore();
-    }
+    // We don't set currentIndex manually here, the Observer will handle it smoothly
 
     container.scrollTo({
       top: index * container.clientHeight,
@@ -67,30 +90,15 @@ export function Feed() {
     }, 600);
   };
 
-  const handleScroll = () => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    // For touch devices where handleWheel is not used
-    const index = Math.round(container.scrollTop / container.clientHeight);
-    if (!isScrollingRef.current && index !== currentIndex) {
-      setCurrentIndex(index);
-    }
-
-    if (posts.length - index < 5) {
-      fetchMore();
-    }
-  };
-
   return (
-    <main ref={containerRef} className="feed-container" onScroll={handleScroll}>
+    <main ref={containerRef} className="feed-container">
       {isLoading && <div className="loading-bar" style={{ width: "100%" }} />}
 
-      <nav className="fixed top-8 left-8 md:top-12 md:left-12 z-10 mix-blend-difference text-white font-mono text-[9px] md:text-[10px] font-bold tracking-[0.3em] uppercase opacity-80">
+      <nav className="fixed top-6 left-6 md:top-12 md:left-12 z-10 mix-blend-difference text-white font-mono text-sm md:text-base font-bold tracking-[0.3em] uppercase opacity-80">
         INFINITE WIKI
       </nav>
 
-      <div className="fixed bottom-8 right-8 md:bottom-12 md:right-12 z-10 mix-blend-difference text-white font-mono text-[10px] flex flex-col items-end gap-3">
+      <div className="fixed bottom-6 right-6 md:bottom-12 md:right-12 z-10 mix-blend-difference text-white font-mono text-[10px] flex flex-col items-end gap-3">
         <div className="flex flex-col items-end leading-none">
           <span className="opacity-40 uppercase tracking-widest mb-1 text-[8px] md:text-[10px]">Index</span>
           <span className="text-sm md:text-lg font-sans font-bold">{(currentIndex + 1).toString().padStart(2, "0")}</span>
@@ -101,7 +109,15 @@ export function Feed() {
       </div>
 
       {posts.map((post, index) => (
-        <WikiPost key={`${post.pageid}-${index}`} post={post} />
+        <div
+          key={`${post.pageid}-${index}`}
+          data-index={index}
+          ref={(el) => {
+            if (el) observerRef.current?.observe(el);
+          }}
+        >
+          <WikiPost post={post} />
+        </div>
       ))}
     </main>
   );
