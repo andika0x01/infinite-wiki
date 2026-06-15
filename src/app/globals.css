@@ -1,26 +1,300 @@
 @import "tailwindcss";
 
 :root {
-	--background: #ffffff;
-	--foreground: #171717;
+  --background: #ffffff;
+  --foreground: #080808;
+  --accent-grey: #f5f5f5;
+  --border-grey: #eeeeee;
+  --text-muted: #707070;
+
+  --font-serif: var(--font-newsreader), serif;
+  --font-sans: var(--font-space-grotesk), sans-serif;
+  --font-mono: var(--font-space-mono), monospace;
 }
 
-@theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
-	--font-sans: var(--font-geist-sans);
-	--font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
 }
 
 body {
-	background: var(--background);
-	color: var(--foreground);
-	font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  -webkit-font-smoothing: antialiased;
+  font-variant-ligatures: common-ligatures;
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
+/* Vertical Feed Snap */
+.feed-container {
+  height: 100dvh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-y: contain;
+}
+
+.feed-container::-webkit-scrollbar {
+  display: none;
+}
+
+.wiki-post {
+  height: 100dvh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  padding: 0 3rem; /* Horizontal padding only */
+  position: relative;
+  background: var(--background);
+  overflow: hidden;
+  /* Industrial Borders */
+  border-left: 1px solid var(--border-grey);
+  border-top: 1px solid var(--border-grey);
+}
+
+.wiki-post::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 1px;
+  background: var(--foreground);
+  opacity: 0.2;
+}
+
+.wiki-post::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 40px;
+  background: var(--foreground);
+  opacity: 0.2;
+}
+
+.wiki-content {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Optimized safe zones for fixed UI */
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+  justify-content: center;
+}
+
+/* Tablet & Mobile Adjustments */
+@media (max-width: 1024px) {
+  .wiki-content {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  .wiki-header {
+    font-size: clamp(2rem, 7vw, 3.5rem);
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .wiki-post {
+    padding: 0 1.5rem;
+  }
+
+  .wiki-content {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  .wiki-header {
+    font-size: 2.25rem;
+    line-height: 1;
+    margin-bottom: 1.25rem;
+  }
+}
+
+.wiki-meta {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--foreground);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.wiki-meta::after {
+  content: "";
+  height: 1px;
+  flex-grow: 1;
+  background: var(--foreground);
+  opacity: 0.1;
+}
+
+.wiki-header {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 8vw, 4.5rem); /* Scaled down for safety */
+  font-weight: 400;
+  line-height: 0.95;
+  margin-bottom: 2rem;
+  letter-spacing: -0.04em;
+  font-style: normal;
+  font-optical-sizing: auto;
+}
+
+.wiki-header i,
+.wiki-header em {
+  font-style: italic;
+  font-family: var(--font-serif);
+}
+
+.wiki-body-container {
+  margin-top: 1rem;
+  position: relative;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 2rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-grey) transparent;
+}
+
+.wiki-body-container::-webkit-scrollbar {
+  width: 2px;
+}
+
+.wiki-body-container::-webkit-scrollbar-thumb {
+  background: var(--border-grey);
+}
+
+.wiki-body {
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  line-height: 1.6;
+  color: var(--foreground);
+  max-width: 700px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  columns: 1; /* Keep it simple and elegant */
+}
+
+/* Elegant fade at the bottom of the scroll area to indicate more content */
+.wiki-body-container::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4rem;
+  background: linear-gradient(to bottom, transparent, var(--background));
+  pointer-events: none;
+  display: block;
+}
+
+.wiki-footer {
+  margin-top: auto; /* Push to bottom of content area */
+  padding-top: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.source-link {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.source-link:hover {
+  color: var(--foreground);
+  border-bottom-color: var(--foreground);
+}
+
+/* Loading Bar */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--foreground);
+  z-index: 100;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  opacity: 0;
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-1 {
+  animation-delay: 0.15s;
+}
+.delay-2 {
+  animation-delay: 0.3s;
+}
+.delay-3 {
+  animation-delay: 0.45s;
+}
+
+/* Scroll Indicator */
+.scroll-indicator-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: currentColor;
+  animation: scrollLine 2s infinite cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes scrollLine {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  51% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
 }
