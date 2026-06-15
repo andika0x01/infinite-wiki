@@ -26,10 +26,12 @@ export function useKnowledgeGraph() {
   const loadingRef = useRef(false);
   const historyRef = useRef<Set<number>>(new Set());
   const postsCountRef = useRef(0);
+  const postsRef = useRef<WikipediaSummary[]>([]);
 
-  // Sync ref with state
+  // Sync refs with state for synchronous access in fetchMore
   useEffect(() => {
     postsCountRef.current = posts.length;
+    postsRef.current = posts;
   }, [posts]);
 
   const fetchMore = useCallback(async () => {
@@ -41,29 +43,38 @@ export function useKnowledgeGraph() {
       let seedTitle = "";
 
       // Get a seed from existing posts or interests
-      if (postsCountRef.current === 0) {
+      if (postsRef.current.length === 0) {
         seedTitle = INTERESTS[Math.floor(Math.random() * INTERESTS.length)];
       } else {
-        // Try to pick a seed from the last few posts to keep context
-        // Use a functional update or the ref to avoid stale closure
-        setPosts((current) => {
-          const recent = current.slice(-10);
-          const randomPost = recent[Math.floor(Math.random() * recent.length)];
-          seedTitle = randomPost?.title || INTERESTS[Math.floor(Math.random() * INTERESTS.length)];
-          return current;
-        });
+        // Pick a seed from the last few posts to maintain context
+        const recent = postsRef.current.slice(-10);
+        const randomPost = recent[Math.floor(Math.random() * recent.length)];
+        seedTitle = randomPost?.title || INTERESTS[Math.floor(Math.random() * INTERESTS.length)];
       }
 
       const actualSeed = seedTitle || INTERESTS[Math.floor(Math.random() * INTERESTS.length)];
       const relatedData = await wikipediaService.getRelated(actualSeed);
 
-      let newArticles = relatedData.pages.filter((p) => !historyRef.current.has(p.pageid) && p.extract && p.extract.length > 50);
+      // Deduplicate using a Set for the current batch
+      const currentBatchIds = new Set<number>();
+
+      let newArticles = relatedData.pages.filter((p) => {
+        if (historyRef.current.has(p.pageid) || currentBatchIds.has(p.pageid)) return false;
+        if (!p.extract || p.extract.length <= 50) return false;
+        currentBatchIds.add(p.pageid);
+        return true;
+      });
 
       // If topic branch is dry, pick a fresh random interest
       if (newArticles.length < 3) {
         const fallbackSeed = INTERESTS[Math.floor(Math.random() * INTERESTS.length)];
         const fallbackData = await wikipediaService.getRelated(fallbackSeed);
-        const fallbackArticles = fallbackData.pages.filter((p) => !historyRef.current.has(p.pageid) && p.extract);
+        const fallbackArticles = fallbackData.pages.filter((p) => {
+          if (historyRef.current.has(p.pageid) || currentBatchIds.has(p.pageid)) return false;
+          if (!p.extract) return false;
+          currentBatchIds.add(p.pageid);
+          return true;
+        });
         newArticles = [...newArticles, ...fallbackArticles];
       }
 
@@ -72,9 +83,6 @@ export function useKnowledgeGraph() {
 
       if (batch.length > 0) {
         setPosts((prev) => [...prev, ...batch]);
-      } else {
-        // Absolute fallback if everything fails: fetch a random summary
-        // (This part can be extended if needed)
       }
     } catch (error) {
       console.error("Knowledge Graph fetch failed:", error);

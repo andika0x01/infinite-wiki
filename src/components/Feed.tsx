@@ -119,7 +119,7 @@ export function Feed() {
       </div>
 
       {posts.map((post, index) => (
-        <div key={`${post.pageid}-${index}`} data-index={index} ref={setItemRef}>
+        <div key={post.pageid} data-index={index} ref={setItemRef}>
           <WikiPost post={post} />
         </div>
       ))}
