@@ -11,11 +11,9 @@ export function Feed() {
   const isScrollingRef = useRef(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // IntersectionObserver for tracking current active post (Smoother than onScroll)
+  // IntersectionObserver for tracking current active post
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -30,13 +28,26 @@ export function Feed() {
         });
       },
       {
-        root: containerRef.current,
-        threshold: 0.5, // 50% visibility triggers the change
+        threshold: 0,
+        rootMargin: "-45% 0px -45% 0px", // Trigger when element is in the middle
       }
     );
 
-    return () => observerRef.current?.disconnect();
+    observerRef.current = observer;
+
+    // Re-observe all current elements
+    const elements = containerRef.current?.querySelectorAll("[data-index]");
+    elements?.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
   }, [posts.length, fetchMore]);
+
+  // Handle ref for new items
+  const setItemRef = (el: HTMLDivElement | null) => {
+    if (el) {
+      observerRef.current?.observe(el);
+    }
+  };
 
   // Wheel interceptor for smooth slide snapping on Desktop
   useEffect(() => {
@@ -77,7 +88,6 @@ export function Feed() {
     if (!container) return;
 
     isScrollingRef.current = true;
-    // We don't set currentIndex manually here, the Observer will handle it smoothly
 
     container.scrollTo({
       top: index * container.clientHeight,
@@ -109,13 +119,7 @@ export function Feed() {
       </div>
 
       {posts.map((post, index) => (
-        <div
-          key={`${post.pageid}-${index}`}
-          data-index={index}
-          ref={(el) => {
-            if (el) observerRef.current?.observe(el);
-          }}
-        >
+        <div key={`${post.pageid}-${index}`} data-index={index} ref={setItemRef}>
           <WikiPost post={post} />
         </div>
       ))}
