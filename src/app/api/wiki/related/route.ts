@@ -25,10 +25,22 @@ export async function GET(request: NextRequest) {
   });
 
   try {
-    const res = await fetch(`${ACTION_API_URL}?${params.toString()}`);
-    if (!res.ok) throw new Error("Wikipedia API error");
+    const res = await fetch(`${ACTION_API_URL}?${params.toString()}`, {
+      headers: {
+        "User-Agent": "InfiniteWiki/1.0 (https://github.com/yourusername/infinite-wiki; contact@example.com) Next.js/16",
+      },
+    });
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Wikipedia API responded with status ${res.status}: ${errorText}`);
+      throw new Error(`Wikipedia API error: ${res.status}`);
+    }
 
     const data = (await res.json()) as any;
+    if (data.error) {
+      console.error("Wikipedia API returned an error object:", data.error);
+      return NextResponse.json({ pages: [] }, { status: 400 });
+    }
     if (!data.query || !data.query.pages) return NextResponse.json({ pages: [] });
 
     const pages = Object.values(data.query.pages).map((p: any) => ({

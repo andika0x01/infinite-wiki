@@ -1,47 +1,67 @@
-# OpenNext Starter
+# Infinite Wiki
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Infinite Wiki is a modern, infinite-scrolling knowledge exploration application. It presents Wikipedia articles in an engaging, feed-like interface with smooth slide snapping, allowing users to seamlessly discover new information. The application is built for high performance and deployed to Cloudflare Edge using OpenNext.
+
+## Key Features
+
+- **Infinite Scroll Feed:** Seamlessly explore a continuous stream of Wikipedia articles.
+- **Smooth Slide Snapping:** Engaging, TikTok-style vertical feed navigation.
+- **Wikipedia API Integration:** Dynamically fetches related knowledge graph articles.
+- **Edge Optimized:** Runs on Cloudflare Workers/Pages for ultra-low latency worldwide.
+
+## Tech Stack
+
+- **Framework:** [Next.js 16](https://nextjs.org)
+- **UI Library:** [React 19](https://react.dev)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com)
+- **Deployment:** [OpenNext Cloudflare](https://opennext.js.org/cloudflare)
+- **Language:** TypeScript
 
 ## Getting Started
 
-Read the documentation at https://opennext.js.org/cloudflare.
+### Prerequisites
 
-## Develop
+- Node.js
+- npm or your preferred package manager
+
+### Installation
+
+1. Clone the repository and navigate to the project directory.
+2. Install the dependencies:
+
+```bash
+npm install
+```
+
+### Development
 
 Run the Next.js development server:
 
 ```bash
 npm run dev
-# or similar package manager command
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application. The page auto-updates as you edit the source files.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
 
-## Preview
+The application is configured to be deployed to Cloudflare using OpenNext.
 
-Preview the application locally on the Cloudflare runtime:
-
-```bash
-npm run preview
-# or similar package manager command
-```
-
-## Deploy
-
-Deploy the application to Cloudflare:
+To build and deploy the application to Cloudflare, run:
 
 ```bash
 npm run deploy
-# or similar package manager command
 ```
 
-## Learn More
+You can also preview the Cloudflare build locally by running:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run preview
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/app/`: Next.js App Router configuration and main entry points.
+- `src/components/`: Reusable React components (e.g., `Feed.tsx`, `WikiPost.tsx`).
+- `src/hooks/`: Custom React hooks, including knowledge graph logic (`useKnowledgeGraph.ts`).
+- `src/services/`: External API integrations (`wikipedia.ts`).
